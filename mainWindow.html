@@ -1,0 +1,64 @@
+<!--
+    video doc: https://www.youtube.com/watch?v=kN1Czs0m1SU
+-->
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>
+            TODO List
+        </title>
+
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+        <link rel="stylesheet" 
+            href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+        
+        <style>
+            body {
+                background-image: url('assets/background/city-lights.jpg');
+                background-size: cover;
+                background-attachment: fixed;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="navbar-fixed">
+            <nav>
+                <div class="nav-wrapper blue">
+                    <spam class="brand-logo">Checklist</spam>
+                </div>
+            </nav>
+        </div>
+        <div class="container">
+            <ul id='card-list'>    
+            </ul>
+        </div>
+
+        <script 
+            src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js">
+        </script>
+        <script>
+            const electron = require('electron')
+            const {ipcRenderer} = electron
+
+            const ul = document.querySelector('#card-list')
+
+            ipcRenderer.on('item:add', function(e, item){
+                const li = document.createElement('li')
+                const itemText = document.createTextNode(item)
+                li.appendChild(itemText)
+                ul.appendChild(li)
+            })
+
+            ipcRenderer.on('item:clear', function(){
+                ul.innerHTML = ''
+            })
+
+            // Removing item
+            ul.addEventListener('dblclick', removeItemFromList)
+
+            function removeItemFromList(e){
+                e.target.remove()
+            }
+        </script>
+    </body>
+</html>

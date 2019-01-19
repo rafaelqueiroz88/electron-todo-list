@@ -1,0 +1,14 @@
+{
+  "name": "todolist",
+  "version": "1.0.0",
+  "description": "A simple todo list for training electron",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "author": "Rafael Queiroz",
+  "license": "MIT",
+  "dependencies": {
+    "electron": "^4.0.1"
+  }
+}
