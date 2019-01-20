@@ -41,12 +41,24 @@
             const {ipcRenderer} = electron
 
             const ul = document.querySelector('#card-list')
+            ul.classList.add('collection')
 
-            ipcRenderer.on('item:add', function(e, item){
-                const li = document.createElement('li')
-                const itemText = document.createTextNode(item)
-                li.appendChild(itemText)
-                ul.appendChild(li)
+            document.addEventListener("DOMContentLoaded", function(event) {
+                ipcRenderer.on('ready', function(e){
+                    console.log('Aplicação carregada')
+                })
+            });
+
+            ipcRenderer.on('item:add', function(e, items){
+                ul.innerHTML = ''
+                items.forEach(function (item) {
+                    // console.log(item.ObjectId)
+                    var li = document.createElement('li')
+                    li.classList.add('collection-item')
+                    li.setAttribute('id', item._id)
+                    li.append(item.item)
+                    ul.appendChild(li)
+                });
             })
 
             ipcRenderer.on('item:clear', function(){
@@ -57,6 +69,9 @@
             ul.addEventListener('dblclick', removeItemFromList)
 
             function removeItemFromList(e){
+                ipcRenderer('item:remove', function(){
+                    console.log('Funcionou')
+                })
                 e.target.remove()
             }
         </script>

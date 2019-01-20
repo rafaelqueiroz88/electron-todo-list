@@ -2,7 +2,45 @@ const electron = require('electron')
 const url = require('url')
 const path = require('path')
 
+var MongoClient = require('mongodb').MongoClient
+var mongoUrl = "mongodb://localhost:27017/"
+
 const {app, BrowserWindow, Menu, ipcMain} = electron
+
+MongoClient.connect(mongoUrl, function(err, db) {
+    if (err) throw err
+    var dbo = db.db("todo")
+    dbo.createCollection("todo_items", function(err, res) {
+        if (err) throw err
+        console.log("Collection created!")
+        db.close()
+    });
+})
+
+// Keep it in mongoDb
+function CreateTODOItem(object) {
+    MongoClient.connect(mongoUrl, function(err, db) {
+        if (err) throw err
+        var dbo = db.db("todo")
+        dbo.collection("todo_items").insertOne(object, function(err, res) {
+            if (err) throw err
+            db.close()
+        })
+    })
+}
+
+// Get from mongoDb
+function GetTODOItems() {
+    MongoClient.connect(mongoUrl, function(err, db) {
+        if (err) throw err
+        var dbo = db.db("todo")
+        dbo.collection("todo_items").find({}).sort({_id: -1}).toArray(function(err, result) {
+            if (err) throw err
+            db.close()
+            mainWindow.webContents.send('item:add', result)
+        })        
+    })
+}
 
 let mainWindow
 let addCardWindow
@@ -30,6 +68,9 @@ app.on('ready', function(){
     // Insert Menu
     Menu.setApplicationMenu(mainMenu)
 })
+
+// Populate TODO list once the application starts
+GetTODOItems()
 
 // Create a window to add cards
 function createAddCardWindow(){
@@ -63,10 +104,10 @@ function createAddCardWindow(){
 const mainAppMenu = [
     {
         label: 'Arquivo',
-        accelerator: process.platform == 'darwin' ? 'Command+A' : 'Ctrl+A',
         submenu: [
             {
                 label: 'Nova Tarefa',
+                accelerator: process.platform == 'darwin' ? 'Command+N' : 'Ctrl+N',
                 click(){
                     createAddCardWindow()
                 }
@@ -115,7 +156,16 @@ if(process.env.NODE_ENV !== 'production'){
 }
 
 // Catch item:add
-ipcMain.on('item:add', function(e, item){
-    mainWindow.webContents.send('item:add', item)
+ipcMain.on('item:add', function(e, items){
+    var myobj = {item: items, type: "tarefa a fazer"}
+
+    CreateTODOItem(myobj)
+    GetTODOItems()
+    
     addCardWindow.close()
+})
+
+// Populate aplication on load
+ipcMain.on('ready', function(e){
+    GetTODOItems()
 })
